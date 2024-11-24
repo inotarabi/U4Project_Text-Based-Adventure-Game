@@ -16,18 +16,32 @@ public class Character {
         System.out.println("Health: " + health);
         System.out.println("Attack: " + attack);
         System.out.println("Defense: " + defense);
+        System.out.println();
     }
 
+    // setter methods to set new stats
     public void newHealth(int health){
-        this.health = health;
+        this.health = health;    // sets new health stat
     }
 
     public void newAttack(int attack){
-        this.attack = attack;
+        this.attack = attack;    // sets new health stat
     }
 
     public void newDefense(int defense){
-        this.defense = defense;
+        this.defense = defense;    // sets new defense stat
     }
 
+    // getter methods for my build stats
+    public int getHealth(){    // gets health stat
+        return health;
+    }
+
+    public int getAttack(){    // gets attack stat
+        return attack;
+    }
+
+    public int getDefense(){    // gets defense stat
+        return defense;
+    }
 }
