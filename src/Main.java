@@ -1,67 +1,160 @@
-
 import java.util.Scanner;
 
-import javax.swing.text.html.StyleSheet;
-
 public class Main {
-
     static String playerName;
     static Character player;
+    
     static boolean gameOn = true;
-    static boolean hasFled = false;
+    static boolean currentlyChoosingBuild;
+
     public static void main(String[] args) {
 
+        // Beginning Description
+        System.out.println("The kingdom of Edlas has been thriving for 200 years. \r\n" +  "However, recently after the murder of the King, the demon lord Azgoth has taken over and now the kingdom is in peril. \r\n" + "The kingdom has been destroyed and demons are everywhere. \r\n" + //
+                        "You, a young mercenary, are drawn into the chaos and must navigate through this world with countless challenges and defeat the accursed demon lord Azgoth. \r\n" +
+                        "");
+
+        // asks for player name
         System.out.print("What is your name Player: ");
         Scanner nameInput = new Scanner(System.in);
         playerName = nameInput.nextLine();
 
-        clearScreen();
-        startGame();
+        clearScreenOnly(); // clears screen
+        startGame(); // starts game
         gameLoop();
-        
 
     }
-   
-    public static void startGame(){
-        System.out.println("The kingdom of Edlas has been thriving for 200 years. However, recently after the murder of the King, the demon lord Azgoth has taken over and now the kingdom is in peril. The kingdom has been destroyed and demons are everywhere. \r\n" + //
-                        "You, a young mercenary, are drawn into the chaos and must navigate through this world with countless challenges and defeat the accursed demon lord Azgoth. \r\n" + 
-                        "");
 
-        String altSelection = "";
-        boolean currentlyChoosingBuild = true;
+    public static void startGame(){
+
+        String tempSelection = "";
+        currentlyChoosingBuild = true;
 
         System.out.println("Welcome " + playerName);
 
+        // build choose logic
         while (currentlyChoosingBuild){
-
+            // User input for specific build
             System.out.println("Do you want to choose Assassin, Knight, or Healer: ");
-            Scanner buildInfoWant = new Scanner(System.in);
-            altSelection = buildInfoWant.nextLine().toLowerCase();
-           
-            printBuildInfo(altSelection);
+            Scanner buildInfo = new Scanner(System.in);
+            tempSelection = buildInfo.nextLine().toLowerCase();
 
+            // prints build info
+            printBuildInfo(tempSelection);
+
+            // Scammer to confirm or go back
             System.out.println("Press Y to comfirm selection. Press N to go back and choose another");
             Scanner input = new Scanner(System.in);
             String playerInput = input.nextLine().toLowerCase();
 
-            if (playerInput.equals("y")){
-                currentlyChoosingBuild = false;
-                clearScreen();
+            
+            if (playerInput.equals("y")){ // if yes breaks out of loop
+                currentlyChoosingBuild = false; 
+                clearScreenOnly(); 
                 break;
-            } else if (playerInput.equals("n")){
-                clearScreen();
+            } else if (playerInput.equals("n")){ // if no restarts loop
+                clearScreenOnly(); 
             }
         }
 
-        // creates the permananent player object
-        if (altSelection.equals("assassin")){
+        // creates the permananent player object and stores it inside player
+        if (tempSelection.equals("assassin")){
             player = new Assassin();
-        } else if (altSelection.equals("knight")){
+        } else if (tempSelection.equals("knight")){
             player = new Knight();
-        } else if (altSelection.equals("healer")){
+        } else if (tempSelection.equals("healer")){
             player = new Healer();
         }
+
+        System.out.println(player.toString());
    
+    }
+
+    public static void gameLoop(){
+
+        // game loop
+        while (gameOn){
+            
+            // User input for quiting or continue
+            System.out.println("Do you want to explore (1) (chance of finding enemy) or do you want to quit game (2)");
+            Scanner input = new Scanner(System.in);
+            int choice = input.nextInt();
+
+            if (choice == 1){
+                // encounter enemy code goes here
+                encounterEnemy();
+            } else if (choice == 2){
+                // end game code goes here
+                gameOn = false;
+                endGame("quit");
+            }
+        }
+    }
+
+    // handles logic of encountering an enemy
+    public static void encounterEnemy(){
+
+        System.out.println("\nYou decide to explore the area...");
+
+        if (Math.random() > 0.3){ // 70% chance of finding an enemy
+            String[] enemy = generateRandomEnemy(); // is the returned enemy
+
+            // generates enemy stats
+            int enemyHealth = generateEnemyStat(enemy[1], enemy[2]);
+            int enemyAttack = generateEnemyStat(enemy[3], enemy[4]);
+            int enemyDefense = generateEnemyStat(enemy[5], enemy[6]);
+
+            // prints out enemy details
+            System.out.println("\nA wild " + enemy[0] + " appears!");
+            System.out.println("Enemy Health: " + enemyHealth);
+            System.out.println("Enemy Attack: " + enemyAttack);
+            System.out.println("Enemy Defense: " + enemyDefense);
+
+            String fightResult = Fight.startFight(player, playerName, player.getHealth(), player.getAttack(), player.getDefense(), 
+            enemy[0], enemyHealth, enemyAttack, enemyDefense);
+            gameOn = false;
+            endGame(fightResult);
+
+        } else {
+            System.out.println("You got lucky. You found no enemies.");
+            gameOn = false;
+            endGame("win");
+        }
+    }
+
+    // generates random enemy and returns the array with all the enemy info
+    public static String[] generateRandomEnemy(){
+
+        // 2D array of enemies
+        // {name, minHealth, maxHealth, minAttack, maxAttack, minDefense, maxDefense, spawnChance}
+        String[][] enemies = {
+            {"goblin", "10", "15", "5", "10", "2", "5", "0.6"},
+            {"bandit", "10", "20", "5", "10", "5", "10", "0.25"},
+            {"goblin king", "30", "60", "30", "50", "30", "40", "0.1"},
+            {"dragon", "100", "150", "50", "75", "75", "100", "0.05"} 
+        };
+
+        double randomChance = Math.random();
+        double cumulativeChance = 0.0; // is used to track the running total chance as the it loops through enemies
+        
+        for (int i = 0; i < enemies.length; i++){
+            String[] enemy = enemies[i];
+            cumulativeChance += Double.parseDouble(enemy[7]);
+            if (randomChance <= cumulativeChance) {
+                return enemy;
+            }
+        }
+
+        return enemies[0];
+    }
+
+    public static int generateEnemyStat(String min, String max){
+
+        // converts string to int
+        int minVal = Integer.parseInt(min);
+        int maxVal = Integer.parseInt(max);
+        return (int) (Math.random() * (maxVal - minVal + 1)) + minVal; // random number between min and max inclusive
+
     }
 
     // creates temp objects just to print eacb builds info
@@ -76,138 +169,25 @@ public class Main {
             Knight altMyCharacter = new Knight();
             altMyCharacter.displayStats();
         }
-    }
+    }   
 
-    public static void gameLoop(){
-        
-
-        while (gameOn){
-            clearScreen();
-            player.displayStats();
-
-            System.out.println("Do you want to explore (1) (chance of finding enemy) or do you want to quit game (2)");
-            Scanner choiceInput = new Scanner(System.in);
-            int choice = choiceInput.nextInt();
-            
-            if (choice == 1){
-                encounterEnemy();
-            } else if (choice == 2){
-                endGame();
-            }
-        }
-
-        // fight("");
-    }
-
-    // the fight method that handles all attacks and damages dealt
-    public static void fight(String enemy){
-
-        int enemyDamage;
-        int actualEnemyInflictedDamage;
-        int playerDamage;
-        int actualPlayerInflictedDamage;
-
-        
-        System.out.println("You engage in a fierce battle with a " + enemy + "!");
-
-        enemyDamage = (int) ((Math.random() * (player.getDefense() + 15)) + 1); // range of damage is 15 more than player defense
-        if (enemyDamage > player.getDefense()){
-            actualEnemyInflictedDamage = (int) ((Math.random() * 5) + 1); // actual damage to be subtracted
-            if (actualEnemyInflictedDamage == 5){
-                actualEnemyInflictedDamage *= 1.5; // if random chooses 5, it makes a critical hit
-            }
-            player.newHealth(player.getHealth() - actualEnemyInflictedDamage); // new health
-            System.out.println("The enemy took " + actualEnemyInflictedDamage + " hearts");
-        } else if (enemyDamage <= player.getDefense()){
-            player.newDefense(player.getDefense() - 2); // regardless if attack doesn't work chips away at defense
-            System.out.println("No hearts taken but defense damaged");
-        }
-
-
-    }
-
-    public static void encounterEnemy(){
-
-        boolean inCombat = false;
-
-        System.out.println("\nYou decide to explore the area...");
-
-
-        if (Math.random() > 0.7){ // 70% chance of finding an enemy while exploring
-            getRandomEnemy();
-            inCombat = true;
-
-            // System.out.println("\nA wild " + enemyType + " appears!");
-            // System.out.println("Enemy Health: " + enemyHealth);
-            // System.out.println("Enemy Attack: " + enemyAttack);
-        }
-
-        while (inCombat){
-            System.out.println("\nSurprise!! An enemy has appeared");
-
-        }
-
-    }
-
-    
-
-    public static void getRandomEnemy(){
-
-        double randomEnemyChance = Math.random();
-        String randomEnemy = "";
-
-        int enemyHealth;
-        int enemyAttack;
-        int enemyDefense;
-
-        if (randomEnemyChance <= 0.6){ // 60% chance of goblin spawn
-
-            randomEnemy = "goblin";
-            enemyHealth = generateEnemyStat(10, 15);
-            enemyAttack = generateEnemyStat(5, 10);
-            enemyDefense = generateEnemyStat(2, 5);
-
-        } else if (randomEnemyChance < 0.85){ // 25% chance of bandit
-
-            randomEnemy = "bandit";
-            enemyHealth = generateEnemyStat(10, 20);
-            enemyAttack = generateEnemyStat(5, 10);
-            enemyDefense = generateEnemyStat(5, 10);
-
-        } else if (randomEnemyChance < 0.95){ // 10% chance of goblin king
-
-            randomEnemy = "goblin king";
-            enemyHealth = generateEnemyStat(30, 60);
-            enemyAttack = generateEnemyStat(30, 50);
-            enemyDefense = generateEnemyStat(30, 40);
-
+    // game over 
+    public static void endGame(String ending){
+        if (ending.equals("lose")){
+            System.out.println("Game Over!! You Died");
+        } else if (ending.equals("win")){
+            System.out.println("You survived for today. You Won!!");
         } else {
-
-            randomEnemy = "dragon"; // 5% chance of dragon
-            enemyHealth = generateEnemyStat(100, 150);
-            enemyAttack = generateEnemyStat(50, 75);
-            enemyDefense = generateEnemyStat(75, 100);
+            System.out.println("I expected better. LLL Your a quitter");
         }
-
-    }
-
-    public static int generateEnemyStat(int firstNumInRange, int secondNumInRange){
-        int stat = (int) (Math.random() * (secondNumInRange - firstNumInRange + 1) + firstNumInRange);
-        return stat;
-    }
-
-    public static void endGame(){
-
-    }
-
-    // clears the terminal
-    public static void clearScreen() { 
         
+    }
+
+    // only clears screen
+    public static void clearScreenOnly() {
+       
         System.out.print("\033[H\033[2J");
-        System.out.flush();
+        System.out.flush();        
+
     }
 }
-
-
-
-

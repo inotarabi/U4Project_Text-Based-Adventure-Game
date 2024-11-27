@@ -8,7 +8,7 @@ public class Healer extends Character {
 
 
     public Healer(){
-        super("Healer",  health,  attack, defense);
+        super(name,  health,  attack, defense);
     }
 
 }

@@ -19,6 +19,10 @@ public class Character {
         System.out.println();
     }
 
+    public String toString() {
+        return "Character [Build: " + build + ", Health: " + health + "]";
+    }
+
     // setter methods to set new stats
     public void newHealth(int health){
         this.health = health;    // sets new health stat

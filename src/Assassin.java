@@ -8,7 +8,7 @@ public class Assassin extends Character {
 
 
     public Assassin(){
-        super("Assassin",  health,  attack, defense);
+        super(name,  health,  attack, defense);
     }
 
 }
